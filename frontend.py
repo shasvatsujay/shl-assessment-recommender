@@ -17,7 +17,7 @@ if st.button("Get Recommendations", type="primary"):
             try:
                 # Call your local FastAPI server
                 response = requests.post(
-                    "http://127.0.0.1:8000/recommend",
+                    "https://shl-assessment-recommender-1-odn4.onrender.com",
                     json={"query": query},
                     timeout=10
                 )
