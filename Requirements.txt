@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+pandas
+sentence-transformers
+faiss-cpu
+fastapi
+uvicorn
+scikit-learn
+numpy
