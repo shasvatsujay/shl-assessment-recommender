@@ -25,5 +25,7 @@ def recommend(request: QueryRequest):
     }
 
 if __name__ == "__main__":
-    print("Starting SHL Recommendation API on http://0.0.0.0:8000...")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Get the port from the environment, default to 8000 if not found
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting SHL Recommendation API on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
