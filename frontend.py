@@ -16,7 +16,7 @@ if st.button("Get Recommendations", type="primary"):
         with st.spinner("Searching the SHL Catalog..."):
             try:
                 # 🛑 CRITICAL FIX: Added /recommend to the end of your Render URL
-                api_url = "https://shl-assessment-recommender-mg1w.onrender.com"
+                api_url = "https://shl-assessment-recommender-mg1w.onrender.com/recommend"
                 
                 response = requests.post(
                     api_url,
