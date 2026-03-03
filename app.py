@@ -8,7 +8,24 @@ app = FastAPI()
 
 class QueryRequest(BaseModel):
     query: str
+@app.get("/")
+def read_root():
+    return {"message": "SHL Recommendation API is Live!"}
+# 👆 
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+@app.post("/recommend")
+def recommend(request: QueryRequest):
+    results = search(request.query, top_k=10)
+    return {"recommended_assessments": results}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+    
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
