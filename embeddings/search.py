@@ -3,38 +3,40 @@ import pickle
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# Load model once
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# We set these to None initially
+_model = None
+_index = None
+_metadata = None
 
-# Load index
-index = faiss.read_index("shl_index.faiss")
-
-# Load metadata
-with open("shl_metadata.pkl", "rb") as f:
-    metadata = pickle.load(f)
+def load_resources():
+    global _model, _index, _metadata
+    if _model is None:
+        print("Loading SentenceTransformer...")
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+    if _index is None:
+        print("Loading FAISS Index...")
+        _index = faiss.read_index("shl_index.faiss")
+    if _metadata is None:
+        print("Loading Metadata...")
+        with open("shl_metadata.pkl", "rb") as f:
+            _metadata = pickle.load(f)
 
 def search(query, top_k=10):
-    query_embedding = model.encode([query])
+    # Only load the heavy stuff when a request actually comes in
+    load_resources()
     
-    # Grab extra results initially so we have enough left over after filtering
+    query_embedding = _model.encode([query])
     fetch_k = top_k * 5 
-    distances, indices = index.search(np.array(query_embedding), fetch_k)
+    distances, indices = _index.search(np.array(query_embedding), fetch_k)
 
     results = []
-
     for idx in indices[0]:
-        # Safety check for valid indices
-        if idx == -1 or idx >= len(metadata):
-            continue
-            
-        meta = metadata[idx]
+        if idx == -1 or idx >= len(_metadata): continue
+        meta = _metadata[idx]
         
-        # 🛑 STRICT RULE: Ignore "Pre-packaged Job Solutions" [cite: 46]
         name_lower = str(meta.get("name", "")).lower()
         url_lower = str(meta.get("url", "")).lower()
-        
-        if "solution" in name_lower or "solution" in url_lower:
-            continue
+        if "solution" in name_lower or "solution" in url_lower: continue
             
         results.append({
             "url": meta["url"],
@@ -45,9 +47,5 @@ def search(query, top_k=10):
             "remote_support": meta.get("remote_support", "Yes"),
             "test_type": meta.get("test_type", ["Knowledge & Skills"])
         })
-        
-        # Stop once we hit the requested number of valid recommendations
-        if len(results) == top_k:
-            break
-
+        if len(results) == top_k: break
     return results
